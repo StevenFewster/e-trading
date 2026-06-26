@@ -1,5 +1,22 @@
 # E-Trading Blotter
 
+<!-- CI / deployment status -->
+[![CI / Deploy](https://github.com/StevenFewster/e-trading/actions/workflows/deploy.yml/badge.svg)](https://github.com/StevenFewster/e-trading/actions/workflows/deploy.yml)
+[![GitHub last commit](https://img.shields.io/github/last-commit/StevenFewster/e-trading)](https://github.com/StevenFewster/e-trading/commits/main)
+
+<!-- Core technologies -->
+[![Angular](https://img.shields.io/badge/Angular-15-DD0031?logo=angular&logoColor=white)](https://v15.angular.io/)
+[![NgRx](https://img.shields.io/badge/NgRx-15-BA2BD2?logo=reactivex&logoColor=white)](https://ngrx.io/)
+[![RxJS](https://img.shields.io/badge/RxJS-7-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Angular CDK](https://img.shields.io/badge/Angular_CDK-15-DD0031?logo=angular&logoColor=white)](https://material.angular.io/cdk/categories)
+[![Angular Material](https://img.shields.io/badge/Angular_Material-15-DD0031?logo=angular&logoColor=white)](https://material.angular.io/)
+
+<!-- Architecture highlights -->
+[![Web Workers](https://img.shields.io/badge/Web_Workers-off--thread_ingestion-F7DF1E?logo=javascript&logoColor=black)](src/app/workers/stock-processor.worker.ts)
+[![SSE](https://img.shields.io/badge/SSE-EventSource_stream-0078D4?logo=microsoft-edge&logoColor=white)](#stream-endpoint)
+[![OnPush](https://img.shields.io/badge/Change_Detection-OnPush-DD0031?logo=angular&logoColor=white)](#key-design-decisions)
+
 A real-time equity trading blotter built with **Angular 15**, **NgRx**, **RxJS**, and **Angular CDK**. Demonstrates a production-grade architecture for high-frequency market data ingestion and display.
 
 ![Blotter screenshot](docs/blotter.png)
