@@ -1,0 +1,149 @@
+<!-- ============================================================
+     BlotterComponent template
+     Uses Angular CDK Table with <table cdk-table> — the table-element
+     rendering mode.  This places the header row inside a proper <thead>
+     so it's always structurally first in the DOM, and sticky positioning
+     works correctly with the browser's native table layout engine.
+
+     The alternative (<cdk-table> div renderer) is useful for non-table
+     layouts (kanban boards, virtual scroll) but for a blotter the semantic
+     <table> form is correct — it also gives screen readers correct context.
+     ============================================================ -->
+
+<!-- ── Status bar ─────────────────────────────────────────────────────── -->
+<div class="blotter-status-bar">
+  <span class="blotter-title">Live Market Data</span>
+
+  <span class="status-indicator"
+        [class.connected]="connected$ | async"
+        [class.loading]="loading$ | async">
+    <span class="status-dot"></span>
+    {{ (connected$ | async) ? 'LIVE' : (loading$ | async) ? 'CONNECTING…' : 'DISCONNECTED' }}
+  </span>
+
+  <span class="stock-count">{{ (stocks$ | async)?.length ?? 0 }} instruments</span>
+
+  <span *ngIf="error$ | async as err" class="stream-error">⚠ {{ err }}</span>
+</div>
+
+<!-- ── Scroll container: fixed height, overflow-auto enables sticky header ── -->
+<div class="blotter-scroll-container">
+
+  <!--
+    <table cdk-table>  ← table-element rendering mode
+    CdkTable automatically wraps header rows in <thead> and data rows in
+    <tbody>, so the column header is always structurally above the data rows.
+    The [dataSource] Observable is subscribed internally by CdkTable.
+  -->
+  <table cdk-table
+         [dataSource]="stocks$"
+         [trackBy]="trackBySymbol"
+         class="blotter-table">
+
+    <!-- ── Symbol column ──────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="symbol">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-symbol">Ticker</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-symbol cell-symbol">
+        {{ stock.symbol }}
+      </td>
+    </ng-container>
+
+    <!-- ── Company name column ────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="name">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-name">Company</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-name cell-name">
+        {{ stock.name }}
+      </td>
+    </ng-container>
+
+    <!-- ── Last price — PriceCellComponent handles the flash animation ── -->
+    <ng-container cdkColumnDef="price">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-price col-right">Last</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-price col-right">
+        <app-price-cell
+          [price]="stock.price"
+          [direction]="stock.priceDirection">
+        </app-price-cell>
+      </td>
+    </ng-container>
+
+    <!-- ── Bid ───────────────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="bid">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Bid</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono bid-price">
+        {{ stock.bid | number:'1.2-2' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Ask ───────────────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="ask">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Ask</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono ask-price">
+        {{ stock.ask | number:'1.2-2' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Spread ────────────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="spread">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Sprd (bps)</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono">
+        {{ stock.spread | number:'1.1-1' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Absolute change ───────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="change">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Chg</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono"
+          [class.positive]="stock.change > 0"
+          [class.negative]="stock.change < 0">
+        {{ stock.change > 0 ? '+' : '' }}{{ stock.change | number:'1.2-2' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Percentage change ─────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="changePercent">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Chg %</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono"
+          [class.positive]="stock.changePercent > 0"
+          [class.negative]="stock.changePercent < 0">
+        {{ stock.changePercent > 0 ? '+' : '' }}{{ stock.changePercent | number:'1.2-3' }}%
+      </td>
+    </ng-container>
+
+    <!-- ── Intraday high ─────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="high">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">High</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono">
+        {{ stock.high | number:'1.2-2' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Intraday low ──────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="low">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-num col-right">Low</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-num col-right mono">
+        {{ stock.low | number:'1.2-2' }}
+      </td>
+    </ng-container>
+
+    <!-- ── Volume ────────────────────────────────────────────────────── -->
+    <ng-container cdkColumnDef="volume">
+      <th cdk-header-cell *cdkHeaderCellDef class="col-vol col-right">Volume</th>
+      <td cdk-cell *cdkCellDef="let stock" class="col-vol col-right mono">
+        {{ formatVolume(stock.volume) }}
+      </td>
+    </ng-container>
+
+    <!-- ── Header row — sticky: true pins it to the top of the scroll container -->
+    <tr cdk-header-row *cdkHeaderRowDef="displayedColumns; sticky: true"></tr>
+
+    <!-- ── Data rows — clicking a row opens the trade ticket dialog -->
+    <tr cdk-row
+        *cdkRowDef="let row; columns: displayedColumns;"
+        class="blotter-row"
+        (click)="onRowClick(row)">
+    </tr>
+
+  </table>
+</div>

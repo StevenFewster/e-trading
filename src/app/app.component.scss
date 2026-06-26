@@ -1,0 +1,45 @@
+/* ── Application shell ──────────────────────────────────────── */
+.app-toolbar {
+  background: #161b22 !important;
+  border-bottom: 1px solid #30363d;
+  color: #e6edf3 !important;
+  height: 52px;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.toolbar-icon {
+  margin-right: 10px;
+  color: #58a6ff;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #e6edf3;
+}
+
+/* Pushes the clock to the right */
+.toolbar-divider {
+  flex: 1;
+}
+
+.toolbar-clock {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: #8b949e;
+  letter-spacing: 0.5px;
+}
+
+.app-main {
+  overflow: hidden;
+}
+
+/* ── Dialog backdrop ───────────────────────────────────────── */
+::ng-deep .ticket-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}

@@ -1,0 +1,154 @@
+<!-- ============================================================
+     TicketComponent template
+     Trade ticket dialog — ticks live with the selected stock's data.
+     async pipe is used throughout so subscriptions are managed automatically.
+     ============================================================ -->
+
+<ng-container *ngIf="stock$ | async as stock; else loading">
+
+  <!-- ── Dialog header ───────────────────────────────────────────────── -->
+  <div class="ticket-header">
+    <div class="ticket-title">
+      <span class="ticket-symbol">{{ stock.symbol }}</span>
+      <span class="ticket-name">{{ stock.name }}</span>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close ticket">✕</button>
+  </div>
+
+  <!-- ── Live price panel ────────────────────────────────────────────── -->
+  <div class="price-panel">
+
+    <!-- Last traded price — uses PriceCellComponent for the flash animation -->
+    <div class="price-main">
+      <label class="price-label">LAST</label>
+      <app-price-cell
+        class="price-large"
+        [price]="stock.price"
+        [direction]="stock.priceDirection">
+      </app-price-cell>
+      <!-- Absolute & percentage change vs previous close -->
+      <span class="change-badge"
+            [class.positive]="stock.change > 0"
+            [class.negative]="stock.change < 0">
+        {{ stock.change > 0 ? '▲' : stock.change < 0 ? '▼' : '─' }}
+        {{ stock.change > 0 ? '+' : '' }}{{ stock.change | number:'1.2-2' }}
+        ({{ stock.changePercent > 0 ? '+' : '' }}{{ stock.changePercent | number:'1.2-3' }}%)
+      </span>
+    </div>
+
+    <!-- Bid / Ask strip — the two prices a trader acts on -->
+    <div class="bid-ask-strip">
+      <div class="ba-cell bid-cell">
+        <label class="ba-label">BID</label>
+        <span class="ba-price mono">{{ stock.bid | number:'1.2-2' }}</span>
+      </div>
+      <div class="ba-spread">
+        <label class="ba-label">SPREAD</label>
+        <span class="mono">{{ stock.spread | number:'1.1-1' }} bps</span>
+      </div>
+      <div class="ba-cell ask-cell">
+        <label class="ba-label">ASK</label>
+        <span class="ba-price mono">{{ stock.ask | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Intraday range -->
+    <div class="range-strip">
+      <span class="range-label">LOW <span class="mono">{{ stock.low | number:'1.2-2' }}</span></span>
+      <div class="range-bar">
+        <!-- Position indicator showing where current price sits in day's range -->
+        <div class="range-fill"
+             [style.width.%]="((stock.price - stock.low) / (stock.high - stock.low || 1)) * 100">
+        </div>
+        <div class="range-thumb"
+             [style.left.%]="((stock.price - stock.low) / (stock.high - stock.low || 1)) * 100">
+        </div>
+      </div>
+      <span class="range-label">HIGH <span class="mono">{{ stock.high | number:'1.2-2' }}</span></span>
+    </div>
+
+  </div>
+
+  <!-- ── Order form ──────────────────────────────────────────────────── -->
+  <form [formGroup]="orderForm" class="order-form" autocomplete="off">
+
+    <!-- Volume / quantity field -->
+    <div class="form-field">
+      <label class="field-label" for="quantity">QUANTITY (shares)</label>
+      <input
+        id="quantity"
+        type="number"
+        formControlName="quantity"
+        class="quantity-input mono"
+        min="1"
+        step="100"
+        placeholder="e.g. 1000">
+      <!-- Inline validation feedback -->
+      <span class="field-error"
+            *ngIf="orderForm.get('quantity')?.invalid && orderForm.get('quantity')?.touched">
+        Enter a valid positive integer
+      </span>
+    </div>
+
+    <!-- Estimated notional value -->
+    <div class="notional-preview" *ngIf="orderForm.get('quantity')?.valid">
+      <span class="notional-label">Est. notional:</span>
+      <span class="notional-value mono">
+        ${{ (orderForm.get('quantity')!.value * stock.price) | number:'1.2-2' }}
+      </span>
+    </div>
+
+    <!-- Buy / Sell action buttons -->
+    <div class="action-buttons">
+      <!--
+        Buy executes at the ASK (market order convention).
+        Disabled when form is invalid or a submission is in flight.
+      -->
+      <button
+        type="button"
+        class="btn btn-buy"
+        [disabled]="orderForm.invalid"
+        (click)="onBuy(stock)">
+        <span class="btn-side">BUY</span>
+        <span class="btn-price mono">{{ stock.ask | number:'1.2-2' }}</span>
+      </button>
+
+      <!--
+        Sell executes at the BID (market order convention).
+      -->
+      <button
+        type="button"
+        class="btn btn-sell"
+        [disabled]="orderForm.invalid"
+        (click)="onSell(stock)">
+        <span class="btn-side">SELL</span>
+        <span class="btn-price mono">{{ stock.bid | number:'1.2-2' }}</span>
+      </button>
+    </div>
+
+  </form>
+
+  <!-- ── Order confirmation banner ─────────────────────────────────── -->
+  <div class="order-confirmation" *ngIf="lastOrder">
+    <span class="conf-icon">✓</span>
+    <span class="conf-text">
+      {{ lastOrder.side.toUpperCase() }} {{ lastOrder.quantity | number }}
+      {{ lastOrder.symbol }} @ {{ lastOrder.price | number:'1.2-2' }} — FILLED
+    </span>
+  </div>
+
+  <!-- ── Footer stats ───────────────────────────────────────────────── -->
+  <div class="ticket-footer">
+    <span>Vol: <span class="mono">{{ stock.volume | number }}</span></span>
+    <span>Updated: <span class="mono">{{ stock.lastUpdated | date:'HH:mm:ss.SSS' }}</span></span>
+  </div>
+
+</ng-container>
+
+<!-- Loading state — shown briefly before the first tick arrives -->
+<ng-template #loading>
+  <div class="ticket-loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Connecting…</span>
+  </div>
+</ng-template>

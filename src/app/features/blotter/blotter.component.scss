@@ -1,0 +1,164 @@
+/* ============================================================
+   BlotterComponent styles
+   Dark terminal aesthetic typical of trading desktops.
+   ============================================================ */
+
+.blotter-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.blotter-title {
+  font-weight: 600;
+  color: #e6edf3;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Live/connecting status dot ─────────────────────────────── */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #6e7681;
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6e7681;
+  }
+
+  &.connected {
+    color: #3fb950;
+    .status-dot {
+      background: #3fb950;
+      /* Pulse animation so it's obviously live */
+      animation: pulse 2s infinite;
+    }
+  }
+
+  &.loading {
+    color: #d29922;
+    .status-dot { background: #d29922; }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.stock-count {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.stream-error {
+  color: #ff453a;
+  font-size: 11px;
+}
+
+/* ── Scroll container — fills remaining viewport height ─────── */
+.blotter-scroll-container {
+  overflow: auto;
+  height: calc(100vh - 100px); /* toolbar (52px) + status bar (~48px) */
+  background: #0d1117;
+}
+
+/* ── CDK Table (table-element mode) ─────────────────────────── */
+.blotter-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* fixed layout prevents column width thrash as numbers change */
+  table-layout: fixed;
+}
+
+/* ── Header row — CDK makes it sticky via inline styles on the <thead>/<tr> */
+.cdk-header-row {
+  background: #161b22;
+  border-bottom: 2px solid #30363d;
+}
+
+.cdk-header-cell {
+  padding: 10px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  /* Ensure header cells have the same dark background when sticky */
+  background: #161b22;
+}
+
+/* ── Data rows ──────────────────────────────────────────────── */
+.cdk-row {
+  border-bottom: 1px solid #21262d;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover .cdk-cell {
+    background: #1c2128 !important;
+  }
+
+  &:nth-child(even) .cdk-cell {
+    background: #0d1117;
+  }
+
+  &:nth-child(odd) .cdk-cell {
+    background: #161b22;
+  }
+}
+
+.cdk-cell {
+  padding: 8px 8px;
+  font-size: 13px;
+  color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Column widths ───────────────────────────────────────────── */
+.col-symbol   { width: 70px; }
+.col-name     { width: 155px; }
+.col-price    { width: 90px; }
+.col-num      { width: 88px; }
+.col-vol      { width: 80px; }
+
+/* Name cells are de-emphasised — they're context, not the key data */
+.cell-name {
+  color: #8b949e;
+  font-size: 12px;
+}
+
+/* Right-align numeric columns */
+.col-right {
+  text-align: right;
+}
+
+/* ── Cell variants ───────────────────────────────────────────── */
+.cell-symbol {
+  font-weight: 700;
+  font-size: 13px;
+  color: #58a6ff;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.bid-price { color: #3fb950; } /* Bids in green */
+.ask-price { color: #ff7b72; } /* Asks in red   */
+
+/* ── P&L colours ─────────────────────────────────────────────── */
+.positive { color: #3fb950 !important; }
+.negative { color: #ff7b72 !important; }

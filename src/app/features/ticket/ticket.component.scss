@@ -1,0 +1,337 @@
+/* ============================================================
+   TicketComponent styles
+   Dark panel with a professional Bloomberg-esque feel.
+   ============================================================ */
+
+/* ── Header ────────────────────────────────────────────────── */
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #30363d;
+  background: #161b22;
+}
+
+.ticket-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticket-symbol {
+  font-size: 22px;
+  font-weight: 700;
+  color: #58a6ff;
+  font-family: 'Roboto Mono', monospace;
+  letter-spacing: 1px;
+}
+
+.ticket-name {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #6e7681;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+
+  &:hover {
+    color: #e6edf3;
+    background: #21262d;
+  }
+}
+
+/* ── Price panel ───────────────────────────────────────────── */
+.price-panel {
+  padding: 16px 20px;
+  background: #0d1117;
+  border-bottom: 1px solid #21262d;
+}
+
+.price-main {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.price-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6e7681;
+  letter-spacing: 1px;
+}
+
+/* Override PriceCellComponent host for the large display */
+.price-large ::ng-deep .price-value {
+  font-size: 28px !important;
+  font-weight: 700;
+}
+
+.change-badge {
+  font-size: 13px;
+  font-family: 'Roboto Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #21262d;
+
+  &.positive { color: #3fb950; }
+  &.negative { color: #ff7b72; }
+}
+
+/* ── Bid / Ask strip ────────────────────────────────────────── */
+.bid-ask-strip {
+  display: flex;
+  gap: 0;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.ba-cell {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.bid-cell { background: rgba(63, 185, 80, 0.08); }
+.ask-cell { background: rgba(255, 123, 114, 0.08); }
+
+.ba-spread {
+  flex: 0.8;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #161b22;
+  font-size: 11px;
+  color: #6e7681;
+}
+
+.ba-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #6e7681;
+}
+
+.ba-price {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.bid-cell .ba-price { color: #3fb950; }
+.ask-cell .ba-price { color: #ff7b72; }
+
+/* ── Intraday range bar ─────────────────────────────────────── */
+.range-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.range-label {
+  font-size: 11px;
+  color: #6e7681;
+  white-space: nowrap;
+
+  .mono { color: #e6edf3; }
+}
+
+.range-bar {
+  flex: 1;
+  height: 4px;
+  background: #21262d;
+  border-radius: 2px;
+  position: relative;
+  overflow: visible;
+}
+
+.range-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #58a6ff, #3fb950);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.range-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e6edf3;
+  border: 2px solid #0d1117;
+  transition: left 0.1s ease;
+}
+
+/* ── Order form ─────────────────────────────────────────────── */
+.order-form {
+  padding: 16px 20px;
+  background: #161b22;
+}
+
+.form-field {
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6e7681;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.quantity-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #e6edf3;
+  font-size: 16px;
+  font-family: 'Roboto Mono', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+  }
+
+  /* Remove browser number input spinners — we handle step via keyboard */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+}
+
+.field-error {
+  display: block;
+  font-size: 11px;
+  color: #ff7b72;
+  margin-top: 4px;
+}
+
+.notional-preview {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8b949e;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  background: #0d1117;
+  border-radius: 4px;
+
+  .notional-value { color: #e6edf3; }
+}
+
+/* ── Buy / Sell buttons ─────────────────────────────────────── */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  gap: 2px;
+
+  &:active:not(:disabled) { transform: scale(0.97); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.btn-buy {
+  background: #1a4731;
+  border: 1px solid #3fb950;
+  color: #3fb950;
+
+  &:hover:not(:disabled) { background: #1f5c3a; }
+}
+
+.btn-sell {
+  background: #4a1a1a;
+  border: 1px solid #ff7b72;
+  color: #ff7b72;
+
+  &:hover:not(:disabled) { background: #5a2020; }
+}
+
+.btn-side {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.btn-price {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── Order confirmation ─────────────────────────────────────── */
+.order-confirmation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(63, 185, 80, 0.1);
+  border-top: 1px solid rgba(63, 185, 80, 0.3);
+  animation: slide-in 0.3s ease;
+
+  .conf-icon { color: #3fb950; font-size: 16px; }
+  .conf-text { font-size: 12px; color: #3fb950; font-family: 'Roboto Mono', monospace; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.ticket-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: #0d1117;
+  border-top: 1px solid #21262d;
+  font-size: 11px;
+  color: #6e7681;
+
+  .mono { color: #8b949e; }
+}
+
+/* ── Loading state ───────────────────────────────────────────── */
+.ticket-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  color: #8b949e;
+}

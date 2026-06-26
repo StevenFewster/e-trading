@@ -1,0 +1,60 @@
+/* ============================================================
+   Global styles for the E-Trading Blotter
+   We keep Material's prebuilt theme (indigo-pink) referenced in
+   angular.json, then layer trading-specific overrides here.
+   ============================================================ */
+
+/* Remove default body margin so the dark toolbar bleeds edge-to-edge */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Dark terminal-like background suits a trading context */
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Numbers in price columns use a monospaced font so digit widths are fixed,
+   preventing the layout from jumping as prices change. */
+.mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* ---- Price flash animations --------------------------------
+   Applied programmatically by PriceCellComponent when direction changes.
+   The animation flashes a background colour briefly then fades. */
+
+@keyframes flash-up {
+  0%   { background-color: rgba(0, 255, 127, 0.5); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-down {
+  0%   { background-color: rgba(255, 69, 58, 0.5); }
+  100% { background-color: transparent; }
+}
+
+.flash-up {
+  animation: flash-up 0.4s ease-out forwards;
+  color: #00ff7f !important;
+}
+
+.flash-down {
+  animation: flash-down 0.4s ease-out forwards;
+  color: #ff453a !important;
+}
+
+/* ---- CDK Table overrides ---------------------------------- */
+
+/* Make Material Dialog transparent so our dark overlay panel shows */
+.ticket-dialog-panel .mat-dialog-container {
+  background: #161b22;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 0;
+}
