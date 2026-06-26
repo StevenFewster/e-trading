@@ -22,14 +22,14 @@ A real-time equity trading blotter built with **Angular 15**, **NgRx**, **RxJS**
 - Node.js 16+ and npm 8+
 - Angular CLI (optional — `npx` works without a global install)
 
-### Install and run
+### Run locally
 
 ```bash
 npm install
 npm start
 ```
 
-Then open [http://localhost:4200](http://localhost:4200).
+Open [http://localhost:4200](http://localhost:4200). The dev server uses the `development` Angular configuration, which does **not** set a base href, so the app runs at the root path locally regardless of the production sub-path.
 
 ### Production build
 
@@ -37,7 +37,45 @@ Then open [http://localhost:4200](http://localhost:4200).
 npm run build
 ```
 
-Output goes to `dist/etrading-blotter/`.
+Output goes to `dist/etrading-blotter/`. The production config in `angular.json` sets `baseHref: /e-trading/` so asset paths and Angular Router resolve correctly when served from that sub-path.
+
+---
+
+## Deployment — stevenfewster.com/e-trading
+
+### How it works
+
+Pushes to `main` trigger the GitHub Actions workflow (`.github/workflows/deploy.yml`):
+
+1. **Build job** — `npm ci` → `npm run build` (production, `baseHref=/e-trading/`) → copies `index.html` to `404.html` (SPA routing fallback) → uploads `dist/` as a workflow artifact
+2. **Deploy job** — downloads the artifact → force-pushes to the `gh-pages` branch via `peaceiris/actions-gh-pages`
+
+Pull requests only run the build job (no deploy), acting as a branch-protection gate.
+
+```
+feature/my-change  ──► PR to main ──► [build CI ✓] ──► merge
+                                                            │
+                                                     push to main
+                                                            │
+                                             [build] → [deploy → gh-pages]
+                                                            │
+                                                  stevenfewster.com/e-trading
+```
+
+### One-time GitHub setup
+
+After the first successful workflow run, enable GitHub Pages on this repo:
+
+1. Go to **Settings → Pages** in this repository
+2. Set **Source** to `Deploy from a branch`
+3. Set **Branch** to `gh-pages` / `/ (root)`
+4. Save — GitHub will show the Pages URL (initially `StevenFewster.github.io/e-trading-example`)
+
+Because `stevenfewster.com` is already the custom domain on your GitHub Pages user site (`StevenFewster/stevenfewster.github.io`), project repos are automatically accessible at `stevenfewster.com/<repo-name>`. If the repo is named `e-trading-example` the path will be `/e-trading-example`; rename the repo to `e-trading` for the exact `/e-trading` path.
+
+### SPA routing on GitHub Pages
+
+GitHub Pages serves static files only — navigating directly to `stevenfewster.com/e-trading/some-route` would 404 without the workaround. The workflow copies `index.html` → `404.html`; when Pages can't find a file it falls back to `404.html`, which loads Angular, which reads `window.location` and routes correctly.
 
 ---
 

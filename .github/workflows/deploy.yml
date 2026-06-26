@@ -1,0 +1,121 @@
+name: CI / Deploy
+
+# ── Triggers ──────────────────────────────────────────────────────────────────
+# Pull requests targeting main: run the build only (acts as a branch protection
+# gate — the PR can only be merged if the Angular build succeeds).
+# Push to main: build AND deploy to the gh-pages branch which GitHub Pages
+# serves at stevenfewster.com/e-trading.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# ── Concurrency ───────────────────────────────────────────────────────────────
+# If a deploy is already in progress and a new push arrives, cancel the
+# in-progress run so we never serve a partially-deployed build.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Job 1: Build ─────────────────────────────────────────────────────────────
+  # Runs on every push and every PR.  Produces the dist/ artifact used by the
+  # deploy job.  Separating build from deploy means PRs get the CI gate without
+  # triggering a deployment.
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          # Cache ~/.npm so repeat builds restore node_modules from cache
+          # rather than re-downloading every package on every run.
+          cache: 'npm'
+
+      - name: Install dependencies
+        # npm ci (clean install) is preferred over npm install in CI:
+        # it respects package-lock.json exactly and fails fast on any
+        # lock-file mismatch, keeping builds reproducible.
+        run: npm ci
+
+      - name: Build (production)
+        # The production configuration in angular.json sets:
+        #   baseHref: /e-trading/
+        # This is the only config change needed for sub-path deployment —
+        # Angular bakes the base href into index.html so the router and
+        # asset paths all resolve relative to /e-trading/.
+        run: npm run build
+
+      # GitHub Pages serves every path as a static file.  Angular uses the
+      # HTML5 History API (pushState) for routing, so navigating directly to
+      # stevenfewster.com/e-trading/some-route would 404 because there is no
+      # physical file at that path.
+      #
+      # The standard GitHub Pages workaround: copy index.html → 404.html.
+      # When Pages cannot find a file it falls back to 404.html, which loads
+      # the Angular app, which then reads window.location and routes correctly.
+      - name: Copy index.html → 404.html (SPA routing fallback)
+        run: cp dist/etrading-blotter/index.html dist/etrading-blotter/404.html
+
+      # Upload dist/ as a workflow artifact so the deploy job can download it
+      # without having to rebuild.  Artifacts persist for 1 day (enough for
+      # debugging a failed deploy without wasting storage long-term).
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/etrading-blotter/
+          retention-days: 1
+
+  # ── Job 2: Deploy ─────────────────────────────────────────────────────────────
+  # Only runs when the triggering event is a push to main (not on PRs).
+  # Downloads the artifact from the build job and force-pushes it to the
+  # gh-pages branch.  GitHub Pages then serves that branch at:
+  #   stevenfewster.com/e-trading
+  # (assuming stevenfewster.com is the custom domain on the github.io user page)
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    # Skip this job for pull requests — only deploy real merges to main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # The GITHUB_TOKEN needs write access to the repo so it can push to
+    # the gh-pages branch.  This permission is scoped to this job only.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # peaceiris/actions-gh-pages is the standard action for gh-pages deployment.
+      # It force-pushes the publish_dir contents to the publish_branch, creating
+      # the branch on first run if it doesn't exist.
+      #
+      # Key options:
+      #   github_token   — uses the auto-generated GITHUB_TOKEN (no PAT needed)
+      #   publish_dir    — the directory to deploy (our Angular build output)
+      #   publish_branch — the branch GitHub Pages is configured to serve from
+      #   user_name/user_email — the git author shown in the gh-pages commit log
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          # Commit message includes the SHA that triggered the deploy so you
+          # can trace any live issue back to the exact source commit.
+          commit_message: 'deploy: ${{ github.sha }}'
